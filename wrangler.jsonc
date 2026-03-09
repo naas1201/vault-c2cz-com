@@ -1,0 +1,115 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "vault-c2cz-com",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-11-12",
+	"compatibility_flags": [
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		// The path to the directory containing the `index.html` file to be served at `/`
+		"directory": "./public"
+	},
+	"observability": {
+		"enabled": true
+	},
+	"routes": [
+		{
+			"pattern": "files.automatic-demo.com",
+			"custom_domain": true
+		}
+	],
+	"workers_dev": false,
+	// TOP-LEVEL BINDINGS (used for default production deployments)
+	"r2_buckets": [
+		{
+			"bucket_name": "vault-c2cz-files",
+			"binding": "R2_FILES","preview_bucket_name": "vault-c2cz-files"
+		}
+	],
+	"d1_databases": [
+		// {
+		// 	"binding": "DB",
+		// 	"database_name": "file-sharing-platform-db",
+		// 	"database_id": "a1c8373e-8ede-4286-ad6d-e72d2cbccc8c",
+		// 	"migrations_dir": "migrations"
+		// },
+		{
+			"binding": "DB",
+			"database_name": "vault-c2cz-db",
+			"database_id": "e6c6db9b-02db-442d-bea7-3d15b3a833c6",
+			"migrations_dir": "migrations",
+			"remote": true
+		}
+	],
+	// Durable Objects for TUS resumable uploads
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "TUS_UPLOAD_HANDLER",
+				"class_name": "TusUploadHandler"
+			}
+		]
+	},
+	// Durable Object migrations
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"TusUploadHandler"
+			]
+		}
+	],
+	"vars": {
+		"MAX_DIRECT_UPLOAD": "100000000",
+		"MAX_TOTAL_FILE_SIZE": "5000000000",
+		"R2_BUCKET_NAME": "file-sharing-platform-files",
+		"ENVIRONMENT": "production",
+		"APP_URL": "https://vault.c2cz.com",
+		"DEV_USER_EMAIL": "info@lpp.ovh",
+		"DEV_USER_ROLES": "admin,sme,user"
+	},
+	// NAMED ENVIRONMENTS
+	"env": {
+		"development": {
+			"r2_buckets": [
+				{
+					"bucket_name": "file-sharing-platform-files",
+					"binding": "R2_FILES",
+					// "remote": true
+				}
+			],
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "file-sharing-platform-db",
+					"database_id": "a1c8373e-8ede-4286-ad6d-e72d2cbccc8c",
+					"migrations_dir": "migrations",
+					// "remote": true
+				}
+			],
+			// Durable Objects binding for development
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "TUS_UPLOAD_HANDLER",
+						"class_name": "TusUploadHandler"
+					}
+				]
+			},
+			"vars": {
+				"MAX_DIRECT_UPLOAD": "100000000",
+				"MAX_TOTAL_FILE_SIZE": "5000000000",
+				"R2_BUCKET_NAME": "file-sharing-platform-files",
+				"ENVIRONMENT": "development",
+				"DEV_USER_ROLES": "admin, sme, user",
+				"DEV_USER_EMAIL": "example@example.com",
+				"APP_URL": "http://localhost:8787"
+			}
+		}
+	}
+}
